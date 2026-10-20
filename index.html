@@ -1,0 +1,694 @@
+<title>Alcance PCI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Preparación remota para PCI DSS v4.0.1: diagnóstico gratuito, SAQ asistido y gap assessment para comercios, fintechs y proveedores de servicios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,700;100,500&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: columna editorial a la izquierda + "informe de ejemplo" a la derecha; fondo de guilloche como en la impresión de seguridad de tarjetas y billetes. */
+:root{
+  --paper:#F2F4F1; --surface:#FFFFFF; --ink:#0E1A2B; --muted:#566173; --rule:#D5DAE0;
+  --accent:#0A6B4D; --accent-ink:#FFFFFF; --accent-soft:#E1EFE9; --guilloche:rgba(10,107,77,.16);
+  --ok:#0A6B4D; --ok-bg:#E1EFE9; --warn:#9A6200; --warn-bg:#FBF0DA; --crit:#B42318; --crit-bg:#FBE5E2;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --radius:10px; --maxw:1120px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0B111C; --surface:#121A28; --ink:#E8ECF2; --muted:#9AA4B4; --rule:#253145;
+  --accent:#3DBE8C; --accent-ink:#06130E; --accent-soft:#12302A; --guilloche:rgba(61,190,140,.14);
+  --ok:#4FCB98; --ok-bg:#12302A; --warn:#E8B04B; --warn-bg:#33270F; --crit:#F2877B; --crit-bg:#3A1A17;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0B111C; --surface:#121A28; --ink:#E8ECF2; --muted:#9AA4B4; --rule:#253145;
+  --accent:#3DBE8C; --accent-ink:#06130E; --accent-soft:#12302A; --guilloche:rgba(61,190,140,.14);
+  --ok:#4FCB98; --ok-bg:#12302A; --warn:#E8B04B; --warn-bg:#33270F; --crit:#F2877B; --crit-bg:#3A1A17;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-stretch:112%;line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5vw,3.6rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.6rem,3vw,2.3rem);font-weight:700}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.mono{font-family:var(--mono)}
+
+/* Header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
+.brand b{font-family:var(--display);font-stretch:112%;font-weight:700;font-size:1.35rem;letter-spacing:.01em}
+.brand span{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+nav.main{display:flex;gap:20px;flex-wrap:wrap;font-size:.95rem}
+nav.main a{color:var(--ink);text-decoration:none}
+nav.main a:hover{color:var(--accent)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 1rem var(--body);padding:12px 20px;border-radius:999px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink);text-decoration:none;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{padding:8px 14px;font-size:.9rem}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--rule)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;padding-block:72px 64px;align-items:start}
+.hero-copy{display:grid;gap:22px;min-width:0}
+.hero-copy .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:6px}
+.facts div{display:grid}
+.facts b{font-family:var(--display);font-stretch:112%;font-size:1.5rem}
+.facts span{font-size:.85rem;color:var(--muted)}
+
+.report{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);box-shadow:0 18px 40px -24px rgba(14,26,43,.35);font-size:.9rem;min-width:0}
+.report header{padding:16px 18px;border-bottom:1px dashed var(--rule);display:grid;gap:4px}
+.report header .eyebrow{font-size:.7rem}
+.report ol{list-style:none;margin:0;padding:8px 0}
+.report li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 18px}
+.report li .n{font-family:var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip.ok{color:var(--ok);background:var(--ok-bg)}
+.chip.warn{color:var(--warn);background:var(--warn-bg)}
+.chip.crit{color:var(--crit);background:var(--crit-bg)}
+.report footer{padding:12px 18px;border-top:1px dashed var(--rule);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.8rem}
+
+/* Sections */
+section.block{padding-block:80px;border-bottom:1px solid var(--rule)}
+.section-head{display:grid;gap:12px;margin-bottom:36px;max-width:720px}
+
+.scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.scope > div{padding:24px;border-radius:var(--radius);border:1px solid var(--rule);background:var(--surface);min-width:0}
+.scope ul{margin:14px 0 0;padding-left:1.1em;display:grid;gap:8px}
+.scope .no{background:transparent;border-style:dashed}
+.scope .no li::marker{content:"✕  ";color:var(--crit)}
+.scope .yes li::marker{content:"✓  ";color:var(--ok)}
+
+/* Diagnostic */
+.diag{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:32px;align-items:start}
+.diag form{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px;display:grid;gap:26px;min-width:0}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}
+legend{font-weight:600;margin-bottom:8px;padding:0}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;cursor:pointer;font-size:.95rem}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.inline-opts{display:flex;gap:8px;flex-wrap:wrap}
+.inline-opts .opt{flex:1 1 140px}
+.q{display:grid;gap:8px;padding-block:12px;border-top:1px solid var(--rule)}
+.q:first-of-type{border-top:0}
+.q .req{font-family:var(--mono);font-size:.75rem;color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;width:max-content;max-width:100%}
+.seg label{padding:6px 14px;font-size:.88rem;cursor:pointer;border-right:1px solid var(--rule)}
+.seg label:last-child{border-right:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--ink);color:var(--paper)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.result{position:sticky;top:96px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px;display:grid;gap:16px;min-width:0}
+.result .saq{font-family:var(--display);font-stretch:112%;font-size:1.9rem;font-weight:700;line-height:1.1}
+.meter{height:10px;border-radius:999px;background:var(--rule);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s ease}
+.gaps{margin:0;padding-left:1.1em;display:grid;gap:6px;font-size:.92rem}
+.gaps .mono{color:var(--crit);font-size:.8rem}
+.note{font-size:.82rem;color:var(--muted)}
+
+/* Pricing */
+.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.plan{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:22px;display:grid;gap:14px;align-content:start;min-width:0}
+.plan.feature{border:2px solid var(--accent)}
+.plan .price{font-family:var(--display);font-stretch:112%;font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums}
+.plan .price small{font-family:var(--body);font-size:.85rem;font-weight:400;color:var(--muted)}
+.plan ul{margin:0;padding-left:1.1em;display:grid;gap:6px;font-size:.92rem}
+.plan .for{font-size:.88rem;color:var(--muted)}
+.extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.extras > div{border:1px dashed var(--rule);border-radius:var(--radius);padding:18px 22px;display:grid;gap:4px}
+.extras b{font-variant-numeric:tabular-nums}
+
+/* Process */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;counter-reset:s}
+.steps li{display:grid;gap:8px;padding-top:16px;border-top:2px solid var(--ink);counter-increment:s;min-width:0}
+.steps li::before{content:"Paso " counter(s);font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps p{font-size:.95rem;color:var(--muted)}
+
+/* About */
+.about{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:48px;align-items:start}
+.cv{display:grid;gap:0;border-top:1px solid var(--rule)}
+.cv div{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:16px;padding-block:12px;border-bottom:1px solid var(--rule);font-size:.95rem}
+.cv dt,.cv .k{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding-top:3px}
+
+/* FAQ */
+.faq{display:grid;gap:10px;max-width:820px}
+.faq details{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:4px 20px}
+.faq summary{cursor:pointer;font-weight:600;padding-block:14px;list-style-position:outside}
+.faq details p{padding-bottom:16px;color:var(--muted)}
+
+/* Contact */
+.contact{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:48px;align-items:start}
+.contact form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:24px;min-width:0}
+.field{display:grid;gap:6px;font-size:.9rem;font-weight:500;min-width:0}
+.field.full{grid-column:1/-1}
+input[type=text],input[type=email],select,textarea{font:inherit;font-weight:400;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:140px;resize:vertical}
+.form-msg{grid-column:1/-1;font-size:.92rem;padding:14px;border-radius:8px;background:var(--accent-soft);display:grid;gap:10px}
+.form-msg pre{white-space:pre-wrap;font-family:var(--mono);font-size:.8rem;margin:0;max-height:220px;overflow:auto}
+
+footer.site{padding-block:40px;color:var(--muted);font-size:.85rem}
+footer.site .wrap{display:grid;gap:10px}
+
+@media (max-width:960px){
+  .hero .wrap,.diag,.about,.contact{grid-template-columns:minmax(0,1fr)}
+  .plans{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .result{position:static}
+}
+@media (max-width:620px){
+  .plans,.steps,.scope,.extras,.contact form{grid-template-columns:minmax(0,1fr)}
+  nav.main{gap:14px;font-size:.9rem}
+  section.block{padding-block:56px}
+  .hero .wrap{padding-block:48px}
+  .cv div{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+</style>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><b>Alcance</b><span>preparación PCI DSS</span></a>
+    <nav class="main" aria-label="Principal">
+      <a href="#diagnostico">Diagnóstico</a>
+      <a href="#precios">Precios</a>
+      <a href="#proceso">Cómo trabajamos</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <canvas id="guilloche" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="eyebrow">PCI DSS v4.0.1 · Comercios, fintechs y proveedores de servicios</p>
+        <h1>Llegue a su validación PCI sin sorpresas.</h1>
+        <p class="lede">Gap analysis y SAQ asistido, 100% remoto y en español. Lo hace alguien que operó la infraestructura crítica de un procesador de tarjetas y trabaja en banca.</p>
+        <div class="ctas">
+          <a class="btn" href="#diagnostico">Hacer el diagnóstico gratis</a>
+          <a class="btn ghost" href="#precios">Ver precios</a>
+        </div>
+        <div class="facts">
+          <div><b>12</b><span>requisitos revisados uno a uno</span></div>
+          <div><b>10 min</b><span>para saber qué SAQ le toca</span></div>
+          <div><b>0</b><span>números de tarjeta que pedimos</span></div>
+        </div>
+      </div>
+
+      <article class="report" aria-label="Informe de brechas de ejemplo">
+        <header>
+          <span class="eyebrow">Informe de brechas · ejemplo</span>
+          <strong>Tienda online · SAQ A-EP</strong>
+        </header>
+        <ol>
+          <li><span class="n">1</span><span>Controles de seguridad de red</span><span class="chip warn">parcial</span></li>
+          <li><span class="n">2</span><span>Configuraciones seguras</span><span class="chip ok">cumple</span></li>
+          <li><span class="n">3</span><span>Protección de datos almacenados</span><span class="chip ok">cumple</span></li>
+          <li><span class="n">4</span><span>Cifrado en transmisión</span><span class="chip ok">cumple</span></li>
+          <li><span class="n">5</span><span>Protección contra malware</span><span class="chip ok">cumple</span></li>
+          <li><span class="n">6</span><span>Software seguro · scripts de pago</span><span class="chip crit">brecha</span></li>
+          <li><span class="n">7</span><span>Acceso por necesidad de conocer</span><span class="chip warn">parcial</span></li>
+          <li><span class="n">8</span><span>Autenticación · MFA</span><span class="chip crit">brecha</span></li>
+          <li><span class="n">9</span><span>Acceso físico</span><span class="chip ok">cumple</span></li>
+          <li><span class="n">10</span><span>Registro y monitoreo</span><span class="chip warn">parcial</span></li>
+          <li><span class="n">11</span><span>Pruebas · escaneo ASV</span><span class="chip crit">brecha</span></li>
+          <li><span class="n">12</span><span>Políticas y programa</span><span class="chip warn">parcial</span></li>
+        </ol>
+        <footer><span class="mono">5 cumple · 4 parcial · 3 brecha</span><span>Datos ficticios</span></footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Qué hacemos y qué no</p>
+        <h2>Le preparamos para la validación. No la firmamos.</h2>
+        <p class="lede">Solo una firma QSA registrada en el PCI Security Standards Council puede emitir un Report on Compliance. Nuestro trabajo es que llegue a ese momento, o a firmar su SAQ, sabiendo exactamente dónde está.</p>
+      </div>
+      <div class="scope">
+        <div class="yes">
+          <h3>Sí hacemos</h3>
+          <ul>
+            <li>Definir el alcance del entorno de datos de tarjeta y la segmentación</li>
+            <li>Gap analysis contra los 12 requisitos de la v4.0.1</li>
+            <li>Acompañarle a completar el SAQ y revisar sus evidencias</li>
+            <li>Hoja de ruta de remediación priorizada</li>
+            <li>Remediación técnica: hardening, logs, parches, MFA, políticas</li>
+          </ul>
+        </div>
+        <div class="no">
+          <h3>No hacemos</h3>
+          <ul>
+            <li>Emitir ROC, AOC de QSA ni "certificados PCI"</li>
+            <li>Firmar documentos en nombre de su empresa</li>
+            <li>Escaneos ASV propios (los coordina un ASV aprobado)</li>
+            <li>Recibir o guardar números de tarjeta</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="diagnostico">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Diagnóstico gratuito</p>
+        <h2>¿Qué SAQ le toca y cuánto le falta?</h2>
+        <p class="lede">Responda con lo que sabe hoy. El resultado es orientativo: el tipo de SAQ lo confirma siempre su banco adquirente.</p>
+      </div>
+      <div class="diag">
+        <form id="diag-form" novalidate>
+          <fieldset>
+            <legend>1. ¿Qué es su empresa?</legend>
+            <div class="inline-opts">
+              <label class="opt"><input type="radio" name="entity" value="merchant" id="ent-m" checked> Comercio que acepta tarjetas</label>
+              <label class="opt"><input type="radio" name="entity" value="sp" id="ent-sp"> Proveedor de servicios (procesa, transmite o aloja datos de otros)</label>
+            </div>
+          </fieldset>
+
+          <fieldset id="channels-fs">
+            <legend>2. ¿Cómo acepta pagos con tarjeta? Marque todos los que apliquen.</legend>
+            <label class="opt"><input type="checkbox" name="ch" value="ecom_redirect" id="ch1" checked> Tienda online; el pago ocurre en una página o iframe del procesador</label>
+            <label class="opt"><input type="checkbox" name="ch" value="ecom_direct" id="ch2"> Tienda online; mi página captura o envía los datos de tarjeta (direct post, JavaScript)</label>
+            <label class="opt"><input type="checkbox" name="ch" value="pos_standalone" id="ch3"> Datáfono independiente, sin conexión a mis sistemas</label>
+            <label class="opt"><input type="checkbox" name="ch" value="vt" id="ch4"> Terminal virtual: digito tarjetas en una web del procesador desde una PC</label>
+            <label class="opt"><input type="checkbox" name="ch" value="pos_integrated" id="ch5"> POS o caja conectada a mis sistemas o a internet</label>
+            <label class="opt"><input type="checkbox" name="ch" value="moto" id="ch6"> Pagos por teléfono o por correo</label>
+            <label class="opt"><input type="checkbox" name="ch" value="p2pe" id="ch7"> Solución P2PE validada por el PCI SSC</label>
+          </fieldset>
+
+          <fieldset>
+            <legend>3. ¿Guarda números de tarjeta completos en sus sistemas, hojas de cálculo o correos?</legend>
+            <div class="inline-opts">
+              <label class="opt"><input type="radio" name="store" value="no" id="st-no" checked> No</label>
+              <label class="opt"><input type="radio" name="store" value="yes" id="st-yes"> Sí</label>
+              <label class="opt"><input type="radio" name="store" value="unk" id="st-unk"> No lo sé</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>4. Controles clave. Marque lo que hoy puede demostrar con evidencia.</legend>
+            <div id="questions"></div>
+          </fieldset>
+        </form>
+
+        <aside class="result" aria-live="polite">
+          <span class="eyebrow">Su resultado</span>
+          <div>
+            <div class="note">Cuestionario probable</div>
+            <div class="saq" id="r-saq">SAQ A</div>
+            <p class="note" id="r-saq-note"></p>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span class="note">Controles con evidencia</span>
+              <b class="mono" id="r-score">0 de 10</b>
+            </div>
+            <div class="meter" aria-hidden="true"><i id="r-bar"></i></div>
+          </div>
+          <div>
+            <div class="note" style="margin-bottom:6px">Brechas a revisar</div>
+            <ul class="gaps" id="r-gaps"></ul>
+          </div>
+          <div style="display:grid;gap:4px">
+            <div class="note">Paquete sugerido</div>
+            <strong id="r-plan"></strong>
+            <span class="mono" id="r-price"></span>
+          </div>
+          <button class="btn" type="button" id="r-send">Enviar este resultado y pedir propuesta</button>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="precios">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Precios en dólares estadounidenses</p>
+        <h2>Precio fijo, publicado antes de empezar.</h2>
+        <p class="lede">Un gap assessment comparable con una firma QSA en EE.UU. cuesta entre US$5,000 y US$40,000. Aquí paga una parte de eso y llega preparado.</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <h3>Diagnóstico</h3>
+          <div class="price">Gratis</div>
+          <p class="for">Para saber por dónde empezar.</p>
+          <ul>
+            <li>Tipo de SAQ probable</li>
+            <li>Puntaje de 10 controles clave</li>
+            <li>Llamada de 20 minutos opcional</li>
+          </ul>
+        </div>
+        <div class="plan">
+          <h3>SAQ asistido</h3>
+          <div class="price">US$400–800 <small>pago único</small></div>
+          <p class="for">SAQ A, A-EP, B, B-IP o C-VT. O US$79 al mes con seguimiento anual.</p>
+          <ul>
+            <li>Llenado guiado, pregunta por pregunta</li>
+            <li>Revisión de sus evidencias</li>
+            <li>Borrador del AOC para que usted lo firme</li>
+          </ul>
+        </div>
+        <div class="plan feature">
+          <h3>Gap assessment pyme</h3>
+          <div class="price">US$2,500–5,000</div>
+          <p class="for">Comercios con SAQ C o D, o que esperan auditoría.</p>
+          <ul>
+            <li>Alcance del entorno de tarjetas</li>
+            <li>Los 12 requisitos con evidencias</li>
+            <li>Informe de brechas y hoja de ruta</li>
+            <li>Sesión de cierre con su equipo</li>
+          </ul>
+        </div>
+        <div class="plan">
+          <h3>Proveedor de servicios</h3>
+          <div class="price">US$6,000–12,000</div>
+          <p class="for">Fintechs, pasarelas, cooperativas y procesadores.</p>
+          <ul>
+            <li>Todo lo del gap pyme</li>
+            <li>Segmentación y criptografía</li>
+            <li>Flujos ISO 8583 y conexiones con adquirentes</li>
+            <li>Preparación para el QSA</li>
+          </ul>
+        </div>
+      </div>
+      <div class="extras">
+        <div><b>Remediación · US$75–120 por hora</b><span class="note">O un retainer mensual. Hardening de Linux y Windows, centralización de logs, parches, MFA, políticas.</span></div>
+        <div><b>Escaneos ASV · por cotización</b><span class="note">Coordinados con un Approved Scanning Vendor aliado. Requeridos cada trimestre en varios SAQ.</span></div>
+      </div>
+      <p class="note" style="margin-top:16px">Gap assessments: 50% al firmar y 50% al entregar el informe. El precio exacto depende del número de sistemas en alcance y se fija antes de empezar.</p>
+    </div>
+  </section>
+
+  <section class="block" id="proceso">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Cómo trabajamos</p>
+        <h2>Cuatro pasos, todo remoto.</h2>
+      </div>
+      <ol class="steps">
+        <li><h3>Alcance</h3><p>Dibujamos con usted el flujo de los datos de tarjeta y decidimos qué sistemas entran. Es el paso que más dinero ahorra.</p></li>
+        <li><h3>Evidencias</h3><p>Usted sube configuraciones, políticas y capturas a una carpeta cifrada. Nunca por correo.</p></li>
+        <li><h3>Informe</h3><p>Cada requisito marcado como cumple, parcial o brecha, con la acción concreta y su prioridad.</p></li>
+        <li><h3>Acompañamiento</h3><p>Le ayudamos a cerrar brechas y a completar su SAQ, o a llegar listo a la auditoría del QSA.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="quien">
+    <div class="wrap about">
+      <div class="section-head" style="margin-bottom:0">
+        <p class="eyebrow">Quién está detrás</p>
+        <h2>Ernesto Arias Díaz</h2>
+        <p class="lede">23 años en tecnología. Los últimos años, dentro de la infraestructura que mueve las transacciones con tarjeta en República Dominicana.</p>
+        <p><a href="https://www.linkedin.com/in/shellknower" target="_blank" rel="noopener">Perfil en LinkedIn</a></p>
+      </div>
+      <dl class="cv">
+        <div><dt>Pagos</dt><dd>Cerca de 4 años en infraestructura crítica Linux y Windows de un procesador de tarjetas, con sistemas de pago ISO 8583.</dd></div>
+        <div><dt>Escala</dt><dd>Unos 300 servidores RHEL y AIX gestionados por un equipo de tres: parches mensuales automatizados, snapshots, automatización de logs.</dd></div>
+        <div><dt>Banca</dt><dd>Administración de DataPower, NetScaler, brokers y Splunk en sistemas centrales.</dd></div>
+        <div><dt>Base</dt><dd>Linux, UNIX (AIX, Solaris), Windows, VMware, Ansible y AWS.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="preguntas">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2>Lo que nos preguntan antes de empezar.</h2>
+      </div>
+      <div class="faq">
+        <details><summary>¿Esto me certifica en PCI DSS?</summary><p>No. PCI no tiene una "certificación" como tal: se valida con un SAQ firmado por su empresa o con un ROC emitido por una firma QSA. Nosotros le preparamos para cualquiera de los dos.</p></details>
+        <details><summary>¿Quién decide qué SAQ me corresponde?</summary><p>Su banco adquirente, según su nivel de comercio y cómo acepta pagos. El diagnóstico le da el tipo probable para que llegue a esa conversación con información.</p></details>
+        <details><summary>¿Necesito una firma QSA?</summary><p>Los comercios de nivel 1 y los proveedores de servicios de nivel 1 sí. La mayoría de las pymes valida con un SAQ. Si necesita QSA, un gap assessment previo suele reducir el tiempo y el costo de la auditoría.</p></details>
+        <details><summary>¿Van a ver datos de mis clientes?</summary><p>No pedimos ni guardamos números de tarjeta. Si una evidencia trae datos de tarjeta por error, la borramos y le avisamos.</p></details>
+        <details><summary>¿Trabajan fuera de República Dominicana?</summary><p>Sí. Todo el servicio es remoto y en español, para cualquier país de Latinoamérica y para empresas hispanas en EE.UU.</p></details>
+        <details><summary>¿Qué cambió con la versión 4.0.1?</summary><p>Desde el 31 de marzo de 2025 son obligatorios requisitos como MFA para todo acceso al entorno de tarjetas (8.4.2), el control de scripts en la página de pago (6.4.3 y 11.6.1) y el análisis de riesgo dirigido para frecuencias de control.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="contacto">
+    <div class="wrap contact">
+      <div class="section-head" style="margin-bottom:0">
+        <p class="eyebrow">Contacto</p>
+        <h2>Pida una propuesta.</h2>
+        <p class="lede">Respondemos en un día hábil con una propuesta de precio fijo.</p>
+        <p class="note">Correo: <span class="mono" id="contact-email"></span></p>
+      </div>
+      <form id="contact-form" novalidate>
+        <label class="field">Nombre<input type="text" id="c-name" name="name" required autocomplete="name"></label>
+        <label class="field">Empresa<input type="text" id="c-company" name="company" autocomplete="organization"></label>
+        <label class="field">Correo<input type="email" id="c-email" name="email" required autocomplete="email"></label>
+        <label class="field">País<input type="text" id="c-country" name="country" autocomplete="country-name"></label>
+        <label class="field full">Servicio de interés
+          <select id="c-service" name="service">
+            <option>SAQ asistido</option>
+            <option>Gap assessment pyme</option>
+            <option>Gap assessment proveedor de servicios</option>
+            <option>Remediación</option>
+            <option>No estoy seguro</option>
+          </select>
+        </label>
+        <label class="field full">Mensaje<textarea id="c-msg" name="message" placeholder="Cuéntenos cómo acepta pagos y si su banco le pidió algo."></textarea></label>
+        <div class="full" style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn" type="submit">Enviar solicitud</button>
+          <span class="note" id="c-error" role="alert"></span>
+        </div>
+        <div class="form-msg" id="c-done" hidden></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><b>Alcance</b> · Preparación PCI DSS · Santo Domingo, República Dominicana</p>
+    <p>PCI DSS es una norma del PCI Security Standards Council. Alcance no es una firma QSA ni un ASV, no está afiliada al PCI SSC y sus servicios no constituyen una validación de cumplimiento.</p>
+  </div>
+</footer>
+
+<script>
+/* ===== Configuración: cambie estos valores al publicar en su dominio ===== */
+const CONFIG = {
+  contactEmail: "contacto@sudominio.com",
+  formEndpoint: "" // p. ej. "https://formspree.io/f/xxxxxxx"; vacío = muestra el mensaje para copiar
+};
+
+document.getElementById("contact-email").textContent = CONFIG.contactEmail;
+
+/* ===== Diagnóstico ===== */
+const QUESTIONS = [
+  {id:"q1", req:"Req. 1.2.7", text:"Las reglas de firewall están documentadas, separan el entorno de tarjetas y se revisan cada 6 meses.", gap:"Firewall y segmentación sin revisión semestral"},
+  {id:"q2", req:"Req. 2.2.2", text:"Se cambiaron contraseñas y configuraciones por defecto de equipos, servidores y POS.", gap:"Contraseñas o configuraciones por defecto"},
+  {id:"q3", req:"Req. 3.3.1", text:"No guardamos CVV, banda magnética ni PIN después de autorizar una transacción.", gap:"Posible retención de datos sensibles de autenticación"},
+  {id:"q4", req:"Req. 4.2.1", text:"Los datos de tarjeta solo viajan por redes públicas con TLS 1.2 o superior.", gap:"Cifrado en tránsito sin confirmar"},
+  {id:"q5", req:"Req. 5.2.1", text:"Todos los equipos del alcance tienen antimalware activo y actualizado.", gap:"Cobertura de antimalware incompleta"},
+  {id:"q6", req:"Req. 6.3.3", text:"Los parches de seguridad críticos se aplican dentro de un mes.", gap:"Ciclo de parches críticos mayor de un mes"},
+  {id:"q7", req:"Req. 8.4.2", text:"Cada persona tiene su propio usuario y todo acceso al entorno de tarjetas exige MFA.", gap:"Usuarios compartidos o acceso sin MFA"},
+  {id:"q8", req:"Req. 10.4.1", text:"Los logs de seguridad se centralizan y se revisan a diario, manual o automáticamente.", gap:"Logs sin centralizar o sin revisión diaria"},
+  {id:"q9", req:"Req. 11.3.2 · 11.4", text:"Hacemos escaneos ASV cada trimestre y un pentest al año.", gap:"Sin escaneos ASV trimestrales o pentest anual"},
+  {id:"q10", req:"Req. 12.6 · 12.10", text:"Tenemos política de seguridad, capacitación anual y un plan de respuesta a incidentes.", gap:"Políticas, capacitación o plan de incidentes"},
+  {id:"q11", req:"Req. 6.4.3 · 11.6.1", text:"Inventariamos y vigilamos los scripts de nuestra página de pago.", gap:"Scripts de la página de pago sin control", ecom:true}
+];
+
+const qWrap = document.getElementById("questions");
+QUESTIONS.forEach(q => {
+  const div = document.createElement("div");
+  div.className = "q"; div.id = "wrap-" + q.id;
+  div.innerHTML =
+    `<span class="req">${q.req}</span><span>${q.text}</span>
+     <div class="seg" role="radiogroup" aria-label="${q.req}">
+       <label><input type="radio" name="${q.id}" value="yes" id="${q.id}-y">Sí</label>
+       <label><input type="radio" name="${q.id}" value="no" id="${q.id}-n" checked>No</label>
+       <label><input type="radio" name="${q.id}" value="unk" id="${q.id}-u">No sé</label>
+     </div>`;
+  qWrap.appendChild(div);
+});
+
+/* Respuestas de ejemplo para que el resultado no arranque vacío */
+["q2","q3","q4","q5","q6"].forEach(id => { const el = document.getElementById(id + "-y"); if (el) el.checked = true; });
+
+const form = document.getElementById("diag-form");
+const val = name => (form.querySelector(`input[name="${name}"]:checked`) || {}).value;
+
+function saqFor(entity, channels, store){
+  if (entity === "sp") return {saq:"SAQ D · Proveedor de servicios", note:"Si procesa más de 300,000 transacciones al año para una marca, necesitará un ROC de una firma QSA.", tier:"sp"};
+  if (store === "yes") return {saq:"SAQ D · Comercio", note:"Guardar números de tarjeta lleva casi siempre al SAQ D. Eliminar ese almacenamiento puede reducir mucho su alcance.", tier:"d"};
+  const c = new Set(channels);
+  let r;
+  if (c.size === 0) r = {saq:"Sin definir", note:"Marque al menos un canal de pago.", tier:"none"};
+  else if (c.size > 1){
+    const simple = [...c].every(x => x === "ecom_redirect" || x === "p2pe");
+    r = simple ? {saq:"SAQ A + SAQ P2PE", note:"Varios canales simples: puede que su adquirente acepte un SAQ por canal.", tier:"saq"}
+               : {saq:"SAQ D o varios SAQ", note:"Con varios canales, el adquirente suele pedir SAQ D o un SAQ por canal. Conviene revisar el alcance.", tier:"d"};
+  } else {
+    const only = [...c][0];
+    const map = {
+      ecom_redirect:{saq:"SAQ A", note:"Todo el manejo de la tarjeta está tercerizado en el procesador. Debe confirmar que su sitio no es vulnerable a scripts que alteren la página de pago.", tier:"saq"},
+      ecom_direct:{saq:"SAQ A-EP", note:"Su página influye en la captura de datos, así que el alcance incluye su servidor web.", tier:"saq"},
+      pos_standalone:{saq:"SAQ B o B-IP", note:"B para datáfonos por línea telefónica, B-IP para datáfonos IP aprobados por PTS.", tier:"saq"},
+      vt:{saq:"SAQ C-VT", note:"La PC donde se digita debe estar aislada y no guardar datos de tarjeta.", tier:"saq"},
+      pos_integrated:{saq:"SAQ C o D", note:"Depende de la segmentación: si el POS comparte red con otros sistemas, el alcance crece.", tier:"d"},
+      moto:{saq:"SAQ C-VT o D", note:"Depende de dónde se digitan los datos. Si se anotan en papel o se graban llamadas, revise el alcance.", tier:"d"},
+      p2pe:{saq:"SAQ P2PE", note:"Solo aplica si la solución aparece en la lista de soluciones P2PE validadas del PCI SSC.", tier:"saq"}
+    };
+    r = map[only];
+  }
+  if (store === "unk") r = {...r, note:r.note + " Si descubre que guarda números de tarjeta, pasará a SAQ D."};
+  return r;
+}
+
+const PLANS = {
+  saq:{name:"SAQ asistido", price:"US$400–800"},
+  d:{name:"Gap assessment pyme", price:"US$2,500–5,000"},
+  sp:{name:"Gap assessment proveedor de servicios", price:"US$6,000–12,000"},
+  none:{name:"Diagnóstico con llamada de 20 minutos", price:"Gratis"}
+};
+
+let lastSummary = "";
+function update(){
+  const entity = val("entity");
+  const channels = [...form.querySelectorAll('input[name="ch"]:checked')].map(i => i.value);
+  const store = val("store");
+  const ecom = entity === "sp" || channels.includes("ecom_redirect") || channels.includes("ecom_direct");
+  document.getElementById("channels-fs").disabled = entity === "sp";
+  document.getElementById("channels-fs").style.opacity = entity === "sp" ? .5 : 1;
+
+  const active = QUESTIONS.filter(q => !q.ecom || ecom);
+  QUESTIONS.forEach(q => { document.getElementById("wrap-" + q.id).hidden = !!q.ecom && !ecom; });
+  const yes = active.filter(q => val(q.id) === "yes").length;
+  const gaps = active.filter(q => val(q.id) !== "yes");
+
+  const r = saqFor(entity, channels, store);
+  document.getElementById("r-saq").textContent = r.saq;
+  document.getElementById("r-saq-note").textContent = r.note;
+  document.getElementById("r-score").textContent = `${yes} de ${active.length}`;
+  document.getElementById("r-bar").style.width = (yes / active.length * 100) + "%";
+
+  const ul = document.getElementById("r-gaps");
+  ul.innerHTML = "";
+  if (gaps.length === 0){ const li = document.createElement("li"); li.textContent = "Ninguna en estos controles. Un gap assessment revisa los demás."; ul.appendChild(li); }
+  gaps.forEach(q => { const li = document.createElement("li"); li.innerHTML = `<span class="mono">${q.req}</span> ${q.gap}`; ul.appendChild(li); });
+
+  let tier = r.tier;
+  if (tier === "saq" && yes / active.length < 0.5) tier = "d";
+  const plan = PLANS[tier];
+  const remed = yes / active.length < 0.5 && tier !== "none" ? " + remediación" : "";
+  document.getElementById("r-plan").textContent = plan.name + remed;
+  document.getElementById("r-price").textContent = plan.price + (remed ? " + US$75–120/h" : "");
+
+  lastSummary = [
+    "Resultado del diagnóstico Alcance",
+    `Tipo de empresa: ${entity === "sp" ? "Proveedor de servicios" : "Comercio"}`,
+    `SAQ probable: ${r.saq}`,
+    `Controles con evidencia: ${yes} de ${active.length}`,
+    "Brechas: " + (gaps.length ? gaps.map(q => `${q.req} (${q.gap})`).join("; ") : "ninguna"),
+    `Paquete sugerido: ${plan.name}${remed}`
+  ].join("\n");
+}
+form.addEventListener("change", update);
+update();
+
+document.getElementById("r-send").addEventListener("click", () => {
+  const msg = document.getElementById("c-msg");
+  msg.value = lastSummary + (msg.value && !msg.value.startsWith("Resultado del diagnóstico") ? "\n\n" + msg.value : "");
+  const svc = document.getElementById("c-service");
+  const want = document.getElementById("r-plan").textContent;
+  [...svc.options].forEach(o => { if (want.startsWith(o.text)) svc.value = o.text; });
+  document.getElementById("contacto").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  setTimeout(() => document.getElementById("c-name").focus({preventScroll:true}), 400);
+});
+
+/* ===== Contacto ===== */
+const cForm = document.getElementById("contact-form");
+cForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = document.getElementById("c-error");
+  const done = document.getElementById("c-done");
+  const name = document.getElementById("c-name").value.trim();
+  const email = document.getElementById("c-email").value.trim();
+  if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = "Escriba su nombre y un correo válido para poder responderle."; return; }
+  err.textContent = "";
+  const data = Object.fromEntries(new FormData(cForm));
+  const text = `Nombre: ${data.name}\nEmpresa: ${data.company}\nCorreo: ${data.email}\nPaís: ${data.country}\nServicio: ${data.service}\n\n${data.message}`;
+  if (CONFIG.formEndpoint){
+    try{
+      const res = await fetch(CONFIG.formEndpoint, {method:"POST", headers:{"Accept":"application/json"}, body:new FormData(cForm)});
+      if (!res.ok) throw new Error();
+      done.hidden = false; done.innerHTML = "<strong>Solicitud enviada.</strong><span>Le responderemos en un día hábil.</span>";
+      cForm.reset(); return;
+    }catch(_){ /* cae al modo copiar */ }
+  }
+  done.hidden = false;
+  done.innerHTML = "";
+  const p = document.createElement("span");
+  p.innerHTML = `El envío automático aún no está conectado. Copie este texto y envíelo a <b class="mono"></b>.`;
+  p.querySelector("b").textContent = CONFIG.contactEmail;
+  const pre = document.createElement("pre"); pre.textContent = text;
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "btn small ghost"; btn.textContent = "Copiar texto";
+  btn.addEventListener("click", async () => {
+    try{ await navigator.clipboard.writeText(text); btn.textContent = "Copiado"; }
+    catch(_){ const range = document.createRange(); range.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(range); btn.textContent = "Texto seleccionado"; }
+  });
+  done.append(p, pre, btn);
+});
+
+/* ===== Guilloche (impresión de seguridad) ===== */
+const cv = document.getElementById("guilloche");
+function drawGuilloche(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  cv.width = w * dpr; cv.height = h * dpr;
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--guilloche").trim() || "rgba(10,107,77,.15)";
+  ctx.lineWidth = 0.7;
+  const cx = w * 0.78, cy = h * 0.5, scale = Math.max(w, h) * 0.0042;
+  const sets = [[96, 31, 52], [96, 29, 66], [96, 37, 44]];
+  sets.forEach(([R, r, d], k) => {
+    ctx.beginPath();
+    const steps = 2400, turns = r;
+    for (let i = 0; i <= steps; i++){
+      const t = i / steps * Math.PI * 2 * turns / 1;
+      const x = (R - r) * Math.cos(t) + d * Math.cos((R - r) / r * t);
+      const y = (R - r) * Math.sin(t) - d * Math.sin((R - r) / r * t);
+      const px = cx + x * scale * (1 + k * 0.08), py = cy + y * scale * (1 + k * 0.08);
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.stroke();
+  });
+  ctx.beginPath();
+  for (let line = 0; line < 14; line++){
+    for (let x = 0; x <= w; x += 4){
+      const y = h * 0.92 + line * 3 + Math.sin(x / 38 + line * 0.5) * 9;
+      x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+  }
+  ctx.stroke();
+}
+drawGuilloche();
+addEventListener("resize", drawGuilloche);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawGuilloche);
+new MutationObserver(drawGuilloche).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawGuilloche);
+</script>
