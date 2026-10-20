@@ -1,5 +1,9 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alcance PCI</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Preparación remota para PCI DSS v4.0.1: diagnóstico gratuito, SAQ asistido y gap assessment para comercios, fintechs y proveedores de servicios.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,7 +181,8 @@ footer.site .wrap{display:grid;gap:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 html{scroll-behavior:smooth;scroll-padding-top:90px}
 </style>
-
+</head>
+<body>
 <header class="site">
   <div class="wrap">
     <a class="brand" href="#inicio"><b>Alcance</b><span>preparación PCI DSS</span></a>
@@ -488,8 +493,8 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}
 <script>
 /* ===== Configuración: cambie estos valores al publicar en su dominio ===== */
 const CONFIG = {
-  contactEmail: "contacto@sudominio.com",
-  formEndpoint: "" // p. ej. "https://formspree.io/f/xxxxxxx"; vacío = muestra el mensaje para copiar
+  contactEmail: "contacto@ernestoarias.dev",
+  formEndpoint: "https://formspree.io/f/myekarll"
 };
 
 document.getElementById("contact-email").textContent = CONFIG.contactEmail;
@@ -692,3 +697,5 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawGuillo
 new MutationObserver(drawGuilloche).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawGuilloche);
 </script>
+</body>
+</html>
